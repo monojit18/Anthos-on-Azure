@@ -1,0 +1,503 @@
+Anthos on GCP
+==============
+gcloud container clusters get-credentials gke-ant-cluster --project=$PROJECTID
+gke-lb-url-map
+gcloud container fleet memberships register gke-fleet --gke-cluster=$LOCATION/$CLUSTERNAME --enable-workload-identity
+gcloud services enable krmapihosting.googleapis.com container.googleapis.com cloudresourcemanager.googleapis.com --project=$PROJECTID
+gcloud anthos config controller create gke-config-ctr --location=asia-southeast1
+
+Anthos on Azure
+==============
+az login
+az group create --name gke-anthos-rg --location eastus
+{
+  "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg",
+  "location": "eastus",
+  "managedBy": null,
+  "name": "gke-anthos-rg",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null,
+  "type": "Microsoft.Resources/resourceGroups"
+}
+
+az network vnet create \
+  --name gke-anthos-vnet \
+  --location eastus \
+  --resource-group gke-anthos-rg \
+  --address-prefixes 10.2.0.0/16 \
+  --subnet-name anthos-cluster-subnet \
+  --subnet-prefix 10.2.0.0/22
+=====================================================================================
+{
+  "newVNet": {
+    "addressSpace": {
+      "addressPrefixes": [
+        "10.2.0.0/16"
+      ]
+    },
+    "bgpCommunities": null,
+    "ddosProtectionPlan": null,
+    "dhcpOptions": {
+      "dnsServers": []
+    },
+    "enableDdosProtection": false,
+    "enableVmProtection": null,
+    "encryption": null,
+    "etag": "W/\"4c51dc35-aa62-4087-9c48-b49daa2f7978\"",
+    "extendedLocation": null,
+    "flowTimeoutInMinutes": null,
+    "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/virtualNetworks/gke-anthos-vnet",
+    "ipAllocations": null,
+    "location": "eastus",
+    "name": "gke-anthos-vnet",
+    "provisioningState": "Succeeded",
+    "resourceGroup": "gke-anthos-rg",
+    "resourceGuid": "50c65230-8dcc-4796-b07c-2c21dd4eb443",
+    "subnets": [
+      {
+        "addressPrefix": "10.2.0.0/22",
+        "addressPrefixes": null,
+        "applicationGatewayIpConfigurations": null,
+        "delegations": [],
+        "etag": "W/\"4c51dc35-aa62-4087-9c48-b49daa2f7978\"",
+        "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/virtualNetworks/gke-anthos-vnet/subnets/anthos-cluster-subnet",
+        "ipAllocations": null,
+        "ipConfigurationProfiles": null,
+        "ipConfigurations": null,
+        "name": "anthos-cluster-subnet",
+        "natGateway": null,
+        "networkSecurityGroup": null,
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateEndpoints": null,
+        "privateLinkServiceNetworkPolicies": "Enabled",
+        "provisioningState": "Succeeded",
+        "purpose": null,
+        "resourceGroup": "gke-anthos-rg",
+        "resourceNavigationLinks": null,
+        "routeTable": null,
+        "serviceAssociationLinks": null,
+        "serviceEndpointPolicies": null,
+        "serviceEndpoints": null,
+        "type": "Microsoft.Network/virtualNetworks/subnets"
+      }
+    ],
+    "tags": {},
+    "type": "Microsoft.Network/virtualNetworks",
+    "virtualNetworkPeerings": []
+  }
+}
+====================================================================================
+az network public-ip create \
+  --name gke-anthos-ngw-ip \
+  --location eastus \
+  --resource-group gke-anthos-rg \
+  --allocation-method Static \
+  --sku Standard
+==========================================
+{
+  "publicIp": {
+    "ddosSettings": {
+      "protectionMode": "VirtualNetworkInherited"
+    },
+    "etag": "W/\"a3f3dbf1-7d95-4d6d-b038-e7004b75596f\"",
+    "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/publicIPAddresses/gke-anthos-ngw-ip",
+    "idleTimeoutInMinutes": 4,
+    "ipAddress": "172.173.155.137",
+    "ipTags": [],
+    "location": "eastus",
+    "name": "gke-anthos-ngw-ip",
+    "provisioningState": "Succeeded",
+    "publicIPAddressVersion": "IPv4",
+    "publicIPAllocationMethod": "Static",
+    "resourceGroup": "gke-anthos-rg",
+    "resourceGuid": "64948d2b-e62a-4d34-9dd4-a8fdfb624345",
+    "sku": {
+      "name": "Standard",
+      "tier": "Regional"
+    },
+    "type": "Microsoft.Network/publicIPAddresses"
+  }
+}
+==========================================
+az network nat gateway create \
+  --name gke-anthos-ngw \
+  --location eastus \
+  --resource-group gke-anthos-rg \
+  --public-ip-addresses gke-anthos-ngw-ip \
+  --idle-timeout 10
+==========================================
+{
+  "etag": "W/\"7837e8ba-2355-4267-adb8-dac1728c3963\"",
+  "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/natGateways/gke-anthos-ngw",
+  "idleTimeoutInMinutes": 10,
+  "location": "eastus",
+  "name": "gke-anthos-ngw",
+  "provisioningState": "Succeeded",
+  "publicIpAddresses": [
+    {
+      "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/publicIPAddresses/gke-anthos-ngw-ip",
+      "resourceGroup": "gke-anthos-rg"
+    }
+  ],
+  "publicIpPrefixes": null,
+  "resourceGroup": "gke-anthos-rg",
+  "resourceGuid": "03fa75d3-dd9a-4eb3-8e78-a44f2530f960",
+  "sku": {
+    "name": "Standard",
+    "tier": "Regional"
+  },
+  "subnets": null,
+  "tags": null,
+  "type": "Microsoft.Network/natGateways",
+  "zones": null
+}
+==========================================
+az network vnet subnet update \
+  --name anthos-cluster-subnet \
+  --vnet-name gke-anthos-vnet \
+  --resource-group gke-anthos-rg \
+  --nat-gateway gke-anthos-ngw
+  ==========================================
+  {
+  "addressPrefix": "10.2.0.0/22",
+  "addressPrefixes": null,
+  "applicationGatewayIpConfigurations": null,
+  "delegations": [],
+  "etag": "W/\"9c5fcfa3-f00e-4e25-b798-9de948dfb96c\"",
+  "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/virtualNetworks/gke-anthos-vnet/subnets/anthos-cluster-subnet",
+  "ipAllocations": null,
+  "ipConfigurationProfiles": null,
+  "ipConfigurations": null,
+  "name": "anthos-cluster-subnet",
+  "natGateway": {
+    "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Network/natGateways/gke-anthos-ngw",
+    "resourceGroup": "gke-anthos-rg"
+  },
+  "networkSecurityGroup": null,
+  "privateEndpointNetworkPolicies": "Disabled",
+  "privateEndpoints": null,
+  "privateLinkServiceNetworkPolicies": "Enabled",
+  "provisioningState": "Succeeded",
+  "purpose": null,
+  "resourceGroup": "gke-anthos-rg",
+  "resourceNavigationLinks": null,
+  "routeTable": null,
+  "serviceAssociationLinks": null,
+  "serviceEndpointPolicies": null,
+  "serviceEndpoints": null,
+  "type": "Microsoft.Network/virtualNetworks/subnets"
+}
+==========================================
+az ad app create --display-name gke-anthos-app
+===============================================
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#applications/$entity",
+  "addIns": [],
+  "api": {
+    "acceptMappedClaims": null,
+    "knownClientApplications": [],
+    "oauth2PermissionScopes": [],
+    "preAuthorizedApplications": [],
+    "requestedAccessTokenVersion": 2
+  },
+  "appId": "9bacee84-1598-41cc-ba91-5b751613e68f",
+  "appRoles": [],
+  "applicationTemplateId": null,
+  "certification": null,
+  "createdDateTime": "2022-11-27T12:22:56.6307939Z",
+  "defaultRedirectUri": null,
+  "deletedDateTime": null,
+  "description": null,
+  "disabledByMicrosoftStatus": null,
+  "displayName": "gke-anthos-app",
+  "groupMembershipClaims": null,
+  "id": "4eba2bbb-3ae5-4955-844a-7053bb8fd27c",
+  "identifierUris": [],
+  "info": {
+    "logoUrl": null,
+    "marketingUrl": null,
+    "privacyStatementUrl": null,
+    "supportUrl": null,
+    "termsOfServiceUrl": null
+  },
+  "isDeviceOnlyAuthSupported": null,
+  "isFallbackPublicClient": null,
+  "keyCredentials": [],
+  "notes": null,
+  "optionalClaims": null,
+  "parentalControlSettings": {
+    "countriesBlockedForMinors": [],
+    "legalAgeGroupRule": "Allow"
+  },
+  "passwordCredentials": [],
+  "publicClient": {
+    "redirectUris": []
+  },
+  "publisherDomain": "monojitdattaoutlook.onmicrosoft.com",
+  "requiredResourceAccess": [],
+  "samlMetadataUrl": null,
+  "serviceManagementReference": null,
+  "signInAudience": "AzureADandPersonalMicrosoftAccount",
+  "spa": {
+    "redirectUris": []
+  },
+  "tags": [],
+  "tokenEncryptionKeyId": null,
+  "verifiedPublisher": {
+    "addedDateTime": null,
+    "displayName": null,
+    "verifiedPublisherId": null
+  },
+  "web": {
+    "homePageUrl": null,
+    "implicitGrantSettings": {
+      "enableAccessTokenIssuance": false,
+      "enableIdTokenIssuance": false
+    },
+    "logoutUrl": null,
+    "redirectUriSettings": [],
+    "redirectUris": []
+  }
+}
+===============================================
+APPLICATION_ID=$(az ad app list --all \
+ --query "[?displayName=='gke-anthos-app'].appId" \
+ --output tsv)
+
+az ad sp create --id "${APPLICATION_ID}"
+===============================================
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#servicePrincipals/$entity",
+  "accountEnabled": true,
+  "addIns": [],
+  "alternativeNames": [],
+  "appDescription": null,
+  "appDisplayName": "gke-anthos-app",
+  "appId": "9bacee84-1598-41cc-ba91-5b751613e68f",
+  "appOwnerOrganizationId": "bbe9b0ad-f1c1-4242-87f9-f22d7621beea",
+  "appRoleAssignmentRequired": false,
+  "appRoles": [],
+  "applicationTemplateId": null,
+  "createdDateTime": null,
+  "deletedDateTime": null,
+  "description": null,
+  "disabledByMicrosoftStatus": null,
+  "displayName": "gke-anthos-app",
+  "homepage": null,
+  "id": "804790fd-6c69-4cb3-91e9-5071aa7114de",
+  "info": {
+    "logoUrl": null,
+    "marketingUrl": null,
+    "privacyStatementUrl": null,
+    "supportUrl": null,
+    "termsOfServiceUrl": null
+  },
+  "keyCredentials": [],
+  "loginUrl": null,
+  "logoutUrl": null,
+  "notes": null,
+  "notificationEmailAddresses": [],
+  "oauth2PermissionScopes": [],
+  "passwordCredentials": [],
+  "preferredSingleSignOnMode": null,
+  "preferredTokenSigningKeyThumbprint": null,
+  "replyUrls": [],
+  "resourceSpecificApplicationPermissions": [],
+  "samlSingleSignOnSettings": null,
+  "servicePrincipalNames": [
+    "9bacee84-1598-41cc-ba91-5b751613e68f"
+  ],
+  "servicePrincipalType": "Application",
+  "signInAudience": "AzureADandPersonalMicrosoftAccount",
+  "tags": [],
+  "tokenEncryptionKeyId": null,
+  "verifiedPublisher": {
+    "addedDateTime": null,
+    "displayName": null,
+    "verifiedPublisherId": null
+  }
+}
+===============================================
+APPLICATION_ID=$(az ad app list --all \
+    --query "[?displayName=='gke-anthos-app'].appId" \
+    --output tsv)
+SERVICE_PRINCIPAL_ID=$(az ad sp list --all  --output tsv \
+      --query "[?appId=='$APPLICATION_ID'].id")
+SUBSCRIPTION_ID=$(az account show --query "id" --output tsv)
+TENANT_ID=$(az account list \
+  --query "[?id=='${SUBSCRIPTION_ID}'].{tenantId:tenantId}" --output tsv)
+echo $APPLICATION_ID $SERVICE_PRINCIPAL_ID $SUBSCRIPTION_ID $TENANT_ID
+===============================================
+RESOURCE_GROUP="gke-anthos-rg"
+az role assignment create \
+  --role "Contributor" \
+  --assignee "${APPLICATION_ID}" \
+  --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/$RESOURCE_GROUP"
+{
+  "canDelegate": null,
+  "condition": null,
+  "conditionVersion": null,
+  "description": null,
+  "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Authorization/roleAssignments/234e5dd9-ca82-4269-9741-3f0e34bd55cc",
+  "name": "234e5dd9-ca82-4269-9741-3f0e34bd55cc",
+  "principalId": "804790fd-6c69-4cb3-91e9-5071aa7114de",
+  "principalType": "ServicePrincipal",
+  "resourceGroup": "gke-anthos-rg",
+  "roleDefinitionId": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+  "scope": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg",
+  "type": "Microsoft.Authorization/roleAssignments"
+}
+
+az role assignment create \
+  --role "User Access Administrator" \
+  --assignee "${APPLICATION_ID}" \
+  --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/$RESOURCE_GROUP"  
+{
+  "canDelegate": null,
+  "condition": null,
+  "conditionVersion": null,
+  "description": null,
+  "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Authorization/roleAssignments/e75c7d94-e5cf-4814-893f-daff92bb6265",
+  "name": "e75c7d94-e5cf-4814-893f-daff92bb6265",
+  "principalId": "804790fd-6c69-4cb3-91e9-5071aa7114de",
+  "principalName": "9bacee84-1598-41cc-ba91-5b751613e68f",
+  "principalType": "ServicePrincipal",
+  "resourceGroup": "gke-anthos-rg",
+  "roleDefinitionId": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/providers/Microsoft.Authorization/roleDefinitions/18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+  "roleDefinitionName": "User Access Administrator",
+  "scope": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg",
+  "type": "Microsoft.Authorization/roleAssignments"
+}
+
+az role assignment create \
+  --role "Key Vault Administrator" \
+  --assignee "${APPLICATION_ID}" \
+  --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/$RESOURCE_GROUP"
+{
+  "canDelegate": null,
+  "condition": null,
+  "conditionVersion": null,
+  "description": null,
+  "id": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg/providers/Microsoft.Authorization/roleAssignments/28bd14fa-1023-4252-b312-1eee41d430b5",
+  "name": "28bd14fa-1023-4252-b312-1eee41d430b5",
+  "principalId": "804790fd-6c69-4cb3-91e9-5071aa7114de",
+  "principalType": "ServicePrincipal",
+  "resourceGroup": "gke-anthos-rg",
+  "roleDefinitionId": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483",
+  "scope": "/subscriptions/70ae9e68-0679-4660-9ff5-3d0bd268b6bc/resourceGroups/gke-anthos-rg",
+  "type": "Microsoft.Authorization/roleAssignments"
+}
+==============================================================================================
+#https://cloud.google.com/anthos/clusters/docs/multi-cloud/azure/reference/supported-regions
+
+gcloud services enable gkemulticloud.googleapis.com --project=$PROJECT_ID
+GCP_REGION="us-east4"
+BASEPATH="/Users/monojitdatta/Workloads/Development/Projects/GCP-Projects/GCPApps"
+
+gcloud container azure clients create gke-anthos-client \
+  --location=$GCP_REGION \
+  --tenant-id="${TENANT_ID}" \
+  --application-id="${APPLICATION_ID}"
+Created Azure Client [https://us-east4-gkemulticloud.googleapis.com/v1/projects/apps-project-3108449/locations/us-east4/azureClients/gke-anthos-client].
+
+CERT=$(gcloud container azure clients get-public-cert --location=$GCP_REGION gke-anthos-client)
+-----BEGIN CERTIFICATE----- <data> -----END CERTIFICATE-----
+
+az ad app credential reset --id "${APPLICATION_ID}" --cert "${CERT}" --append
+{
+  "appId": "9bacee84-1598-41cc-ba91-5b751613e68f",
+  "password": null,
+  "tenant": "bbe9b0ad-f1c1-4242-87f9-f22d7621beea"
+}
+
+ssh-keygen -t rsa -m PEM -b 4096 -C "GKE Anthos on Azure" -f $BASEPATH/Misc/gke-ssh-key -N "" 1>/dev/null
+SSH_PUBLIC_KEY=$(cat $BASEPATH/Misc/gke-ssh-key.pub)
+
+CLUSTER_RESOURCE_GROUP_ID=$(az group show --query id --output tsv --resource-group=$RESOURCE_GROUP)
+
+VNET_ID=$(az network vnet show --query id --output tsv --resource-group=$RESOURCE_GROUP --name=gke-anthos-vnet)
+SUBNET_ID=$(az network vnet subnet show --query id --output tsv \
+--resource-group=$RESOURCE_GROUP --vnet-name=gke-anthos-vnet --name=anthos-cluster-subnet)
+
+POD_CIDR_BLOCK="10.3.0.0/16"
+SERVICE_CIDR_BLOCK="10.4.0.0/16"
+CLUSTER="gke-azure-cluster"
+VERSION="1.24.5-gke.200"
+USER=$(gcloud auth list --filter="account:admin*" --format="value(account)")
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:$PROJECT_ID.svc.id.goog[gke-system/gke-telemetry-agent]" \
+  --role=roles/gkemulticloud.telemetryWriter
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:apps-project-sa@$PROJECT_ID.iam.gserviceaccount.com" \
+  --role=roles/gkehub.gatewayAdmin
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:apps-project-sa@$PROJECT_ID.iam.gserviceaccount.com" \
+  --role=roles/gkehub.viewer
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+--member="user:$USER" --role=roles/gkehub.gatewayAdmin
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+--member="user:$USER" --role=roles/gkehub.viewer
+
+gcloud container azure clusters create $CLUSTER \
+    --cluster-version $VERSION \
+    --azure-region eastus --location $GCP_REGION \
+    --fleet-project $PROJECT_ID \
+    --client gke-anthos-client \
+    --resource-group-id $CLUSTER_RESOURCE_GROUP_ID \
+    --vnet-id $VNET_ID \
+    --subnet-id $SUBNET_ID \
+    --pod-address-cidr-blocks $POD_CIDR_BLOCK \
+    --service-address-cidr-blocks $SERVICE_CIDR_BLOCK \
+    --ssh-public-key "${SSH_PUBLIC_KEY}" \
+    --tags "control-plane=$CLUSTER" \
+    --admin-users $USER
+#gcloud container azure clusters delete $CLUSTER --location=$GCP_REGION
+/*
+ERROR: (gcloud.container.azure.clusters.create) INVALID_ARGUMENT: invalid version: \
+"1.24.5-gke.600", supported values are [1.24.5-gke.200 1.24.3-gke.2100 1.23.11-gke.300 \
+1.23.9-gke.2100 1.23.9-gke.800 1.23.8-gke.1700 1.23.7-gke.1300 1.22.15-gke.100 1.22.12-gke.2300\
+1.22.12-gke.1100 1.22.12-gke.200 1.22.10-gke.1500 1.22.8-gke.2100 1.21.14-gke.2900 1.21.14-gke.2100 \
+1.21.11-gke.1900 1.21.11-gke.1800 1.21.6-gke.1500 1.21.5-gke.2800], \
+field: azure_cluster.control_plane.version
+*/
+
+gcloud container azure node-pools create system-pool \
+    --cluster $CLUSTER \
+    --location $GCP_REGION \
+    --node-version $VERSION \
+    --vm-size Standard_DS4_v2 \
+    --max-pods-per-node 50 \
+    --min-nodes 3 \
+    --max-nodes 5 \
+    --ssh-public-key "${SSH_PUBLIC_KEY}" \
+    --subnet-id $SUBNET_ID
+#gcloud container azure node-pools delete system-pool --cluster=$CLUSTER  --location=$GCP_REGION
+
+gcloud container azure clusters describe gke-azure-cluster --location=$GCP_REGION
+gcloud container azure clusters get-credentials gke-azure-cluster --location=$GCP_REGION
+
+gcloud container azure node-pools list --cluster=$CLUSTER --location=$GCP_REGION
+
+gcloud container azure clusters describe $CLUSTER --location=$GCP_REGION --format='value(authorization.admin_users)'
+gcloud container azure clusters describe $CLUSTER --location=$GCP_REGION --format='value(workloadIdentityConfig.identityProvider)'
+
+kubectl create secret docker-registry registry-secret \
+--docker-server=asia-southeast1-docker.pkg.dev \
+--docker-username=_json_key \
+--docker-email=apps-project-sa@apps-project-3108449.iam.gserviceaccount.com \
+--docker-password="$(cat $BASEPATH/Misc/apps-project-sa.json)"
+
+kubectl create deployment hello-deploy --image=asia-southeast1-docker.pkg.dev/apps-project-3108449/cloud-native-apps-repo/httpd:latest \
+--dry-run=client -o yaml > hello-deploy.yaml
+kubectl expose deployment hello-deploy --name hello-svc --type LoadBalancer --port 80 --dry-run=client -o yaml > hello-svc.yaml
+
+kubectl create deployment nginx-deploy --image=asia-southeast1-docker.pkg.dev/apps-project-3108449/cloud-native-apps-repo/nginx:latest \
+--dry-run=client -o yaml > nginx-deploy.yaml
+kubectl expose deployment nginx-deploy --name nginx-svc --type LoadBalancer --port 80 --dry-run=client -o yaml > nginx-svc.yaml
