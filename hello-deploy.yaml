@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-deploy
+  name: hello-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-deploy  
+  template:
+    metadata:      
+      labels:
+        app: hello-deploy
+    spec:
+      containers:
+      - image: asia-southeast1-docker.pkg.dev/apps-project-3108449/cloud-native-apps-repo/httpd:latest
+        name: httpd
+      imagePullSecrets:
+      - name: registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:  
+  labels:
+    app: hello-deploy
+  name: hello-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: hello-deploy
+  type: LoadBalancer

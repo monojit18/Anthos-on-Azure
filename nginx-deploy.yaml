@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  template:
+    metadata:      
+      labels:
+        app: nginx-deploy
+    spec:
+      containers:
+      - image: asia-southeast1-docker.pkg.dev/apps-project-3108449/cloud-native-apps-repo/nginx:latest
+        name: nginx
+      imagePullSecrets:
+      - name: registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:  
+  labels:
+    app: nginx-deploy
+  name: nginx-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-deploy
+  type: LoadBalancer
