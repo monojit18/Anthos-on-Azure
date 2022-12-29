@@ -42,8 +42,91 @@ Following is a list of Core components that are relevant to this discussion i.e.
 
 Following are the steps we would follow as we move on:
 
+- Create a GCP project to host all resources for Anthos on Azure
+
+- Login to GCP Console with a Service Account or User Account
+
 - Login and Connect to the Azure portal
+
 - Create a Resource Group to host all resources to be created for the K8s cluster
+
 - Create Azue Virtual Network with a /16 prefix and Subnet with a /22 prefix to host K8s cluster resources
+
 - Create an Azure  Public IP and associate it with NAT gateway. And then associate it with the K8s Subnet create above
-- 
+
+- Create Service Principal object on Azure AD
+
+  - Create an Azure AD Appliation which generates an ApplicationID
+  - Create a Service Principal object for this ApplicationID
+
+- Configure RBAC on Azure
+
+  - Assign Contributor role to the above Service Principal on the entire Resource Group
+  - Assign User Access Administrator role to the above Service Principal on the entire Resource Group
+  - Assign Key Vault Administrator role to the above Service Principal on the entire Resource Group
+
+- Create an AzureClient resource on GCP
+
+  - AzureClient resource will be created with the Azure AD Service Principal
+  - Anthos will authenicate with Azure while calling their REST APIs etc. as the Azure AD Service Principal
+
+- Configure RBAC on GCP
+
+  - Assign gkehub.gatewayAdmin role to the authenticated account for the entire GCP project
+  - Assign gkehub.viewer role to the authenticated account for the entire GCP project
+
+- Create the Anthos Cluster for Azure on GCP. This only creates the Control Plane of the K8s cluster on Azure
+
+- Create the System Nodepool with Virtual Machine Scale Set (VMSS) on Azure; to host subsequent workloads
+
+  > **TIP**
+  >
+  > Ideally, 
+  >
+  > - We should create additional workload specific Nodepools
+  > - Use Default nodepool for K8s system specific workloads only
+
+  
+
+- Connect to the Cluster
+
+- Deploy couple of simple micro-services onto the K8s cluster on Azure
+
+- Test the applications end to end
+
+## Let us delve into this
+
+### Prerequisites
+
+- An active GCP Subscription
+- A Github account (optional)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [gcloud sdk](https://cloud.google.com/sdk/docs/install-sdk)
+- An Active Azure Subscription
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/)
+- [Visual Studio Code](https://code.visualstudio.com/download) (*Optional*) or any other preferred IDE
+
+### Prepare Environment
+
+Let us prepare the environment first
+
+- Setup **Environment** variables
+
+  ```bash
+  PROJECT_NAME="<project-name>"
+  REGION="<compute/region>"
+  ZONE="<compute/zone>"
+  SA_NAME="<sa-name>"
+  GSA="$SA_NAME@${PROJECT_NAME}.iam.gserviceaccount.com"
+  USER="<user-email>"
+  CLUSTER="gke-azure-cluster"
+  VPC_NAME="spoke-vpc"
+  CLUSTER_SUBNET_NAME="gke-cluster-subnet"
+  PROXY_SUBNET_NAME="gke-proxy-only-subnet"
+  PSC_SUBNET_NAME="gke-psc-subnet"
+  INGRESS_SERVICE_ATTACHMENT="gke-service-attachment"
+  NEG_NAME="gke-service-neg"
+  JUMP_SERVER_SUBNET_NAME="jumper-server-subnet"
+  ```
+
+  
