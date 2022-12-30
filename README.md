@@ -1,4 +1,4 @@
-# Born and Nourished on GCP, Living on Azure
+# Born and Nourished by GCP, Living in Azure
 
 ## Introduction
 
@@ -507,4 +507,10 @@ Let us prepare the environment first
 
 ### Conclusion
 
-This document depicted how an end to end flow 
+This document depicted how Anthos can Deploy, Configure and Manage K8s cluster on Azure with a single unified view
+
+## References
+
+- [Source Code](https://github.com/monojit18/Anthos-on-Azure.git) at Github
+- [Anthos clusters on Azure](https://cloud.google.com/anthos/clusters/docs/multi-cloud/azure/concepts/architecture)
+- [Anthos Multi-Cloud](https://cloud.google.com/anthos/clusters/docs/multi-cloud)
