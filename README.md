@@ -1,4 +1,4 @@
-# Born and Nourished by GCP, Living in Azure
+# Born in and Nourished by GCP, Living in Azure
 
 ## Introduction
 
