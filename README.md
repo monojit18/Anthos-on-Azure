@@ -369,6 +369,8 @@ Let us prepare the environment first
 
   #### View on Azure
 
+  ![Anthos-on-Azure-22](./Assets/Anthos-on-Azure-22.png)
+
   ![Anthos-on-Azure-8](./Assets/Anthos-on-Azure-8.png)
 
   ![Anthos-on-Azure-9](./Assets/Anthos-on-Azure-9.png)
@@ -419,40 +421,90 @@ Let us prepare the environment first
   kubectl expose deployment nginx-deploy --name nginx-svc --type LoadBalancer --port 80 --dry-run=client -o yaml > nginx-svc.yaml
   ```
 
+  ##### Services running on Azure; view from GCP
+
+  ![Anthos-on-Azure-29](./Assets/Anthos-on-Azure-29.png)
+
+  
+
+  ##### hello-sec Service running on the browser
+
+  ![Anthos-on-Azure-30](./Assets/Anthos-on-Azure-30.png)
+
+  
+
+  ##### nginx-sec Service running on the browser
+
+  ![Anthos-on-Azure-31](./Assets/Anthos-on-Azure-31.png)
+
+  
+
 - Visit **Azure Portal**; review resources created
 
   #### Load Balancers
 
   ##### Load Balancer for Control Plane of the K8s cluster
 
-  ![Anthos-on-Azure-17](/Users/monojitd/Workloads/Development/Projects/GithubProjects/Workshops/AnthosWorkshop/Anthos-on-Azure/Assets/Anthos-on-Azure-17.png)
+  ![Anthos-on-Azure-17](./Assets/Anthos-on-Azure-17.png)
 
   
 
   ##### Frontend IP configuration
 
-  ![Anthos-on-Azure-18](/Users/monojitd/Workloads/Development/Projects/GithubProjects/Workshops/AnthosWorkshop/Anthos-on-Azure/Assets/Anthos-on-Azure-18.png)
+  ![Anthos-on-Azure-18](./Assets/Anthos-on-Azure-18.png)
 
   
 
   ##### Backend pool mapped to Control Plane VMs
 
-  ![Anthos-on-Azure-19](/Users/monojitd/Workloads/Development/Projects/GithubProjects/Workshops/AnthosWorkshop/Anthos-on-Azure/Assets/Anthos-on-Azure-19.png)
+  ![Anthos-on-Azure-19](./Assets/Anthos-on-Azure-19.png)
 
   
 
   ##### Load Balancer for the Worker Nodes of the K8s cluster
 
-  ![Anthos-on-Azure-20(1)](/Users/monojitd/Workloads/Development/Projects/GithubProjects/Workshops/AnthosWorkshop/Anthos-on-Azure/Assets/Anthos-on-Azure-20(1).png)
+  ![Anthos-on-Azure-20(1)](./Assets/Anthos-on-Azure-20(1).png)
 
   
 
   ##### Frontend IP configuration
 
-  ![Anthos-on-Azure-20](/Users/monojitd/Workloads/Development/Projects/GithubProjects/Workshops/AnthosWorkshop/Anthos-on-Azure/Assets/Anthos-on-Azure-20.png)
+  ![Anthos-on-Azure-20](./Assets/Anthos-on-Azure-20.png)
 
   
 
   ##### Backend pool mapped to Worker Nodes
 
-  ![Anthos-on-Azure-21](/Users/monojitd/Workloads/Development/Projects/GithubProjects/Workshops/AnthosWorkshop/Anthos-on-Azure/Assets/Anthos-on-Azure-21.png)
+  ![Anthos-on-Azure-21](./Assets/Anthos-on-Azure-21.png)
+
+
+
+#### Observing the K8s cluster on Azure from GCP
+
+##### Anthos Dashboard
+
+![Anthos-on-Azure-24](./Assets/Anthos-on-Azure-24.png)
+
+![Anthos-on-Azure-25](./Assets/Anthos-on-Azure-25.png)
+
+
+
+##### Metrics Explorer
+
+###### Memory Usage
+
+![Anthos-on-Azure-26](./Assets/Anthos-on-Azure-26.png)
+
+###### CPU Usage
+
+![Anthos-on-Azure-27](./Assets/Anthos-on-Azure-27.png)
+
+###### Log Bytes
+
+![Anthos-on-Azure-28](./Assets/Anthos-on-Azure-28.png)
+
+
+
+### Conclusion
+
+This document depicted how an end to end flow 
