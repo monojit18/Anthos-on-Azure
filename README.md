@@ -427,13 +427,13 @@ Let us prepare the environment first
 
   
 
-  ##### hello-sec Service running on the browser
+  ##### hello-svc Service running on the browser
 
   ![Anthos-on-Azure-30](./Assets/Anthos-on-Azure-30.png)
 
   
 
-  ##### nginx-sec Service running on the browser
+  ##### nginx-svc Service running on the browser
 
   ![Anthos-on-Azure-31](./Assets/Anthos-on-Azure-31.png)
 
