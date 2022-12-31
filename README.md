@@ -2,11 +2,11 @@
 
 ## Introduction
 
-Today majority of the customers are looking towards multiple CSPs/Vendors to run their Cloud workloads at sccale and also run, manage, operate them seamlessly - whenver and wherever!
+Today majority of the customers are looking towards multiple CSPs/Vendors to run their Cloud workloads at scale and also run, manage, operate them seamlessly - whenever and wherever!
 
-Single-cloud architecture is highly dependent on specific CSPs and their tools, services. Anthos provies a single pane of glass to manage workloads from multiple clouds with a unified management and configuration plane. Customers having containerized workloads that need to run on multiple clouds viz. AWS, Azure - can now be deployed, managed, configured from GCP Console or CLI. Moreover with the support for [Bare Metal](https://cloud.google.com/anthos/clusters/docs/bare-metal/latest), customers can now create, manage and operate K8s clusters on their own hardware.
+Single-cloud architecture is highly dependent on specific CSPs and their tools, services. Anthos provides a single pane of glass to manage workloads from multiple clouds with a unified management and configuration plane. Customers having containerized workloads that need to run on multiple clouds viz. AWS, Azure - can now be deployed, managed, configured from GCP Console or CLI. Moreover with the support for [Bare Metal](https://cloud.google.com/anthos/clusters/docs/bare-metal/latest), customers can now create, manage and operate K8s clusters on their own hardware.
 
-This document would focus on an end to end implementation of creating and managing K8s cluster on Azure from GCP through Anthos. The following diagram depicts how Anthos simplifies the multi-cloud workload management.
+This document would focus on an end to end implementation of creating and managing K8s cluster on Azure from GCP through Anthos. The following diagram depicts how Anthos simplifies the multi-cloud workload management
 
 ![why-anthos-multi-cloud](./Assets/why-anthos-multi-cloud.png)
 
@@ -16,7 +16,7 @@ This document would focus on an end to end implementation of creating and managi
 
 ![anthos-18-components](./Assets/anthos-18-components.png)
 
-A [detailed technical overview](https://cloud.google.com/anthos/docs/concepts/overview) on Anthos multi-cloud depicts all its components and features and how it facilitates infrastructure management, confguration and application deloyment acorss multiple environments.
+A [detailed technical overview](https://cloud.google.com/anthos/docs/concepts/overview) on Anthos multi-cloud depicts all its components and features and how it facilitates infrastructure management, configuration and application deployment across multiple environments
 
 ## Anthos on Azure
 
